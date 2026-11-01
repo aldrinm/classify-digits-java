@@ -13,13 +13,58 @@ public class TestSome {
 
   static void main() throws IOException {
 
-    DataSet testData = loadDataAndShowSomeStats();
+//    DataSet testData = loadTestDataAndShowSomeStats();
+    DataSet trainingData = loadTrainDataAndShowSomeStats();
 
-    averageDigit(testData, 7);
+//    var averageEight = averageDigit(trainingData, 8);
+    //    if (labels.getRow(i).argMax(0).getInt(0) == digit) {
+//      return images.get(NDArrayIndex.point(i), NDArrayIndex.all(),
+//          NDArrayIndex.all(),
+//          NDArrayIndex.all());
+
+
+//    averageDigit(testData, 7);
+    computeCloseness(trainingData);
+  }
+
+  private static void computeCloseness(DataSet dataSet) {
+    //find image that matches 8
+    INDArray labels = dataSet.getLabels();
+    INDArray images = dataSet.getFeatures();
+
+    var digit2 = images.get(NDArrayIndex.point(2), NDArrayIndex.all(), NDArrayIndex.all(),
+        NDArrayIndex.all());
+    int anInt = labels.getRow(2).argMax(0).getInt(0);
+    System.out.println("anInt = " + anInt);
+    imgShow(digit2);
+    var digit17 = images.get(NDArrayIndex.point(17), NDArrayIndex.all(), NDArrayIndex.all(),
+        NDArrayIndex.all()); //digit is 8
+    int anInt2 = labels.getRow(17).argMax(0).getInt(0);
+    System.out.println("anInt2 = " + anInt2);
+    imgShow(digit17);
+
+    INDArray averageEight = averageDigit(dataSet, 8);
+    var W = averageEight.transpose();
+
+    Number dotTwo = W.mul(digit2).sumNumber();
+    System.out.println("dot2 = " + dotTwo);
+    Number dotSeventeen = W.mul(digit17).sumNumber();
+    System.out.println("dot17 = " + dotSeventeen);
 
   }
 
-  private static DataSet loadDataAndShowSomeStats() throws IOException {
+  private static INDArray findDigitData(INDArray labels, INDArray images, int digit) {
+    for (int i = 0; i< labels.size(0); i++) {
+      if (labels.getRow(i).argMax(0).getInt(0) == digit) {
+        return images.get(NDArrayIndex.point(i), NDArrayIndex.all(),
+            NDArrayIndex.all(),
+            NDArrayIndex.all());
+      }
+    }
+    return null;
+  }
+
+  private static DataSet loadTestDataAndShowSomeStats() throws IOException {
     Path dataDir = Path.of(".");
 
 /* Training data takes long to load, so for trying things out just use the test data
@@ -49,6 +94,21 @@ public class TestSome {
 //    imgShow(singleImage);
 
     return testData;
+  }
+
+  private static DataSet loadTrainDataAndShowSomeStats() throws IOException {
+    Path dataDir = Path.of(".");
+
+    DataSet trainingData = MnistReader.load(
+        dataDir.resolve("train-images.idx3-ubyte"),
+        dataDir.resolve("train-labels.idx1-ubyte")
+    );
+    System.out.println("Training features: "
+        + trainingData.getFeatures().shapeInfoToString());
+
+    System.out.println("Training labels: "
+        + trainingData.getLabels().shapeInfoToString());
+    return trainingData;
   }
 
   private static void imgShow(INDArray indArray) {
@@ -82,7 +142,7 @@ public class TestSome {
   }
 
 
-  static void averageDigit(DataSet testData, int digit) {
+  static INDArray averageDigit(DataSet testData, int digit) {
     System.out.println("features shape: " + testData.getFeatures().shapeInfoToString());
     System.out.println("label shape: " + testData.getLabels().shapeInfoToString());
 
@@ -106,7 +166,9 @@ public class TestSome {
       throw new IllegalArgumentException("No images found for digit " + digit);
     }
     sum.divi(count);
-    imgShow(sum);
+    // Uncomment to see an image of the representation
+    // imgShow(sum);
+    return sum;
   }
 
 }
