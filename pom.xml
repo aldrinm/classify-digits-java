@@ -30,10 +30,37 @@
       <version>${dl4j.version}</version>
     </dependency>
 
+<!--
+    GPU - didnt work great. was slower than CPU on my laptop
+    <dependency>
+      <groupId>org.nd4j</groupId>
+      <artifactId>nd4j-cuda-11.6-platform</artifactId>
+      <version>${dl4j.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.bytedeco</groupId>
+      <artifactId>cuda-platform</artifactId>
+      <version>11.6-8.3-1.5.7</version>
+    </dependency>
+    <dependency>
+      <groupId>org.bytedeco</groupId>
+      <artifactId>cuda</artifactId>
+      <version>11.6-8.3-1.5.7</version>
+      <classifier>windows-x86_64-redist</classifier>
+    </dependency>
+-->
+
     <dependency>
       <groupId>org.datavec</groupId>
       <artifactId>datavec-data-image</artifactId>
       <version>${dl4j.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>ch.qos.logback</groupId>
+      <artifactId>logback-classic</artifactId>
+      <version>1.2.13</version>
     </dependency>
 
   </dependencies>

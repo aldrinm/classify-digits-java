@@ -1,6 +1,6 @@
+package aldrinm.classify;
+
 import java.awt.image.BufferedImage;
-import java.io.IOException;
-import java.nio.file.Path;
 import javax.swing.ImageIcon;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -8,13 +8,61 @@ import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.dataset.DataSet;
 import org.nd4j.linalg.factory.Nd4j;
 import org.nd4j.linalg.indexing.NDArrayIndex;
+import org.nd4j.linalg.ops.transforms.Transforms;
 
 public class TestSome {
 
-  static void main() throws IOException {
+  static void main() throws Exception {
+    var data = Nd4j.arange(10);
+    System.out.println("data = " + data);
+    INDArray derivative = Transforms.sigmoidDerivative(data);
+    System.out.println("derivative = " + derivative);
+
+//    var f2 = first.reshape(3, 1, 2);
+//    System.out.println("f2 = " + f2);
+//
+//// Dimensions: [BatchSize, RowsA, ColsA]
+//    INDArray batchMatrixA = Nd4j.rand(new long[]{3, 3, 2});
+//    System.out.println("batchMatrixA = " + batchMatrixA);
+//// Dimensions: [ColsA, ColsB] (Rows of B must equal Cols of A)
+//    INDArray matrixB = Nd4j.rand(new long[]{2, 1});
+//    System.out.println("matrixB = " + matrixB);
+//// Multiply across the 2nd axis of A (index 2) and 0th axis of B (index 0)
+//    INDArray result = Nd4j.tensorMmul(batchMatrixA, matrixB, new int[][]{{2}, {0}});
+//
+//// The output shape will automatically be [BatchSize, RowsA, ColsB] -> [32, 4, 2]
+//    System.out.println("result shape = "+ result.shapeInfo());
+//    System.out.println("result = " + result);
+
+
+    /* shuffling
+    var first = Nd4j.rand(10, 2);
+    var second = Nd4j.rand(10, 3);
+    var dataset = new DataSet(first, second);
+    dataset.shuffle();
+
+    System.out.println("first = " + first);
+    System.out.println("dataset.getFeatures() = " + dataset.getFeatures());
+    System.out.println("second = " + second);
+    System.out.println("dataset.getFeatures() = " + dataset.getLabels());
+*/
+
+/* simple loading
+    Path dataDir = Path.of("./python");
+    var trainingData = DataLoader.load(dataDir.resolve("x_test.npy"), dataDir.resolve("y_test.npy"));
+*/
+
+
+/*  //Dot product
+    var a = Nd4j.create(new float[]{1, 2, 3});
+//    var b = Nd4j.create(new float[][]{{4}, {5}, {6}});
+    var b = Nd4j.create(new float[]{4, 5, 6});
+    var r = Transforms.dot(a, b);
+    System.out.println("r = " + r);
+*/
 
 //    DataSet testData = loadTestDataAndShowSomeStats();
-    DataSet trainingData = loadTrainDataAndShowSomeStats();
+//    DataSet trainingData = loadTrainDataAndShowSomeStats();
 
 //    var averageEight = averageDigit(trainingData, 8);
     //    if (labels.getRow(i).argMax(0).getInt(0) == digit) {
@@ -24,7 +72,7 @@ public class TestSome {
 
 
 //    averageDigit(testData, 7);
-    computeCloseness(trainingData);
+//    computeCloseness(trainingData);
   }
 
   private static void computeCloseness(DataSet dataSet) {
@@ -64,53 +112,6 @@ public class TestSome {
     return null;
   }
 
-  private static DataSet loadTestDataAndShowSomeStats() throws IOException {
-    Path dataDir = Path.of(".");
-
-/* Training data takes long to load, so for trying things out just use the test data
-    DataSet trainingData = MnistReader.load(
-        dataDir.resolve("train-images.idx3-ubyte"),
-        dataDir.resolve("train-labels.idx1-ubyte")
-    );
-    System.out.println("Training features: "
-        + trainingData.getFeatures().shapeInfoToString());
-
-    System.out.println("Training labels: "
-        + trainingData.getLabels().shapeInfoToString());
-*/
-
-    DataSet testData = MnistReader.load(
-        dataDir.resolve("t10k-images.idx3-ubyte"),
-        dataDir.resolve("t10k-labels.idx1-ubyte")
-    );
-
-    System.out.println("Test features: "
-        + testData.getFeatures().shapeInfoToString());
-
-    INDArray singleImage = testData.getFeatures()
-        .get(NDArrayIndex.point(1), NDArrayIndex.all(), NDArrayIndex.all(), NDArrayIndex.all());
-    System.out.println("onerow.shapeInfoToString() = " + singleImage.shapeInfoToString());
-
-//    imgShow(singleImage);
-
-    return testData;
-  }
-
-  private static DataSet loadTrainDataAndShowSomeStats() throws IOException {
-    Path dataDir = Path.of(".");
-
-    DataSet trainingData = MnistReader.load(
-        dataDir.resolve("train-images.idx3-ubyte"),
-        dataDir.resolve("train-labels.idx1-ubyte")
-    );
-    System.out.println("Training features: "
-        + trainingData.getFeatures().shapeInfoToString());
-
-    System.out.println("Training labels: "
-        + trainingData.getLabels().shapeInfoToString());
-    return trainingData;
-  }
-
   private static void imgShow(INDArray indArray) {
 
     INDArray image = indArray;
@@ -127,8 +128,7 @@ public class TestSome {
     for (int y = 0; y < height; y++) {
       for (int x = 0; x < width; x++) {
         float value = image.getFloat(y, x);
-        int gray = Math.round(Math.clamp(value, 0f, 1f) * 255f);
-        bufferedImage.setRGB(x, y, (gray << 16) | (gray << 8) | gray);
+        bufferedImage.setRGB(x, y, (int) value);
       }
     }
 
@@ -146,18 +146,17 @@ public class TestSome {
     System.out.println("features shape: " + testData.getFeatures().shapeInfoToString());
     System.out.println("label shape: " + testData.getLabels().shapeInfoToString());
 
-    // images: [numberOfImages, 784], with pixel values in [0, 1]
+    // images: [numberOfImages, 28, 28]
     var images = testData.getFeatures();
     var labels = testData.getLabels();
     // labels: [numberOfImages, 10], one-hot encoded
-    INDArray sum = Nd4j.zeros(1, 28, 28);
+    INDArray sum = Nd4j.zeros( 28, 28);
     int count = 0;
 
     System.out.println("images.size(0) = " + images.size(0));
     for (int i = 0; i < images.size(0); i++) {
       if (labels.getRow(i).argMax(0).getInt(0) == digit) {
-        sum.addi(images.get(NDArrayIndex.point(i), NDArrayIndex.all(), NDArrayIndex.all(),
-            NDArrayIndex.all()));
+        sum.addi(images.get(NDArrayIndex.point(i), NDArrayIndex.all(), NDArrayIndex.all()));
         count++;
       }
     }
